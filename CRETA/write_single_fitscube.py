@@ -1,13 +1,21 @@
-def write_single_fitscube(file_name, output_name): 
+import numpy as np
+from astropy import units as u
+from specutils import Spectrum1D
+import astropy
+from astropy.nddata import StdDevUncertainty
+from specutils import SpectrumList
+import pandas as pd 
+from astropy.io import fits
+from astropy.table import Table
 
-       import numpy as np
-       from astropy import units as u
-       from specutils import Spectrum1D
-       import astropy
-       from astropy.nddata import StdDevUncertainty
-       from specutils import SpectrumList
-       import pandas as pd 
-       from astropy.io import fits  
+def write_single_fitscube(file_name, output_name): 
+       """Writes a .fits file corresponding to a single aperture IFS extraction
+
+       Parameters
+       ----------
+       file_name : str
+       output_name : str
+       """
        
        if output_name is None: output_name = file_name.split('.fits')[0]+'_cube.fits'
        
@@ -121,7 +129,7 @@ def write_single_fitscube(file_name, output_name):
            header['EXTRTYPE'] = dictionary[" 'exrtaction_type'"]
            header['APRAD'] = float(dictionary[" 'r_ap'"].split("'")[1])
            #add GRCNTRA , dec
-           from astropy.table import Table
+           
            df_names = pd.DataFrame(res[0].meta['band_name'][0])
            df_names.columns = ['Band_name']
            t_names = Table.from_pandas(df_names)
@@ -149,3 +157,4 @@ def write_single_fitscube(file_name, output_name):
            hdulist.writeto(output_name, overwrite=True)
 
            hdulist.close()
+
