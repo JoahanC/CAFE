@@ -57,14 +57,20 @@ class cafe_io:
 
         return tablePath, outPath
 
-    
-    ##### Function that reads a multi-extension .fits file from CRETA           ###
-    ###############################################################################    
-    # @file_name: The fits filename . (string)
-    ########### --> Return res_spec1d  ############################
-        
     def read_cretacube(self, file_name, extract):
-        
+        """Reads a multi-extension .fits file from CRETA
+
+        Parameters
+        ----------
+        file_name : str
+        The path to the CRETA .fits file
+        extract : ???
+        ???
+
+        Returns
+        -------
+        self : `res_spec1d`
+        """
         cube = fits.open(file_name)
         cube.info()
         
@@ -83,18 +89,22 @@ class cafe_io:
         cube.close()
 
         return self
-
-        
-    ##### Function that reads a TABLE .fits file from CRETA           ###
-    ###############################################################################    
-    # @filename: The fits filename . (string)
-    ########### --> Return res_spec1d  ############################
-    # @res_spec1d: A list of extracted spectra. (list of Spectrum1D)        
-    ###############################################################################   
     
     @staticmethod
     def customFITSReader(file_name, extract): 
-        
+        """Reads a table .fits file from CRETA
+
+        Parameters
+        ----------
+        file_name : str
+        The path to the .fits file from CRETA
+        extract : ???
+        ???
+
+        Returns
+        -------
+        res_spec1d : list of `Spectrum1D`
+        """
         # Options for spec are:
         # 'ap': Aperture flux
         # 'ap_PSC': Aperture flux point-source corrected
