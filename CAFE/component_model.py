@@ -7,18 +7,22 @@ import astropy.units as u
 ### Feature functions         ###
 #################################
 def pah_drude(path='tables/'):
-    ''' Make initial PAH profile structure
+    """Makes a dictionary of initial PAH profile structure value guesses.
 
     Makes a first guess at PAH feature amplitudes, presumably based on the 
     references Smith et al. 2006) and Brandl et al. (2006). This is a direct
-    port of the jam_pahdrude.pro IDL routine used by original CAFE
+    port of the jam_pahdrude.pro IDL routine used by original CAFE.
 
-    Keyword Arguments:
-    path -- the path to look for the pah template file
+    Arguments
+    ---------
+    path : str
+        The path to look for the PAH template file.
 
-    Returns: Dict, consisting of inital wavelength, with, peak, and line 
-    complex IDs for the PAHs in the file
-    '''
+    Returns
+    -------
+    dict 
+        Consisting of inital wavelength, with, peak, and line complex IDs for the PAHs in the file.
+    """
     data = np.genfromtxt(path+'pah_template.txt', comments=';')
     wave0 = data[:,0]
     gam = data[:,1]
@@ -31,7 +35,7 @@ def pah_drude(path='tables/'):
     # Set feature peaks to the values obtained using PAHFIT (Smith et
     # al. 2006) to fit the mean starburst spectrum of Brandl et al. (2006).
     #         PEAK           WAVE   N  COMPLEX
-    """
+    '''
     peak = np.asarray([0.00000000, #$ ;;  3.30   0   0
             0.00000000, #$ ;;  3.40   26  0
             0.06159884, #$ ;;  5.27   1   1
@@ -64,24 +68,27 @@ def pah_drude(path='tables/'):
             0.25877291, #$ ;; 17.87  23  16
             0.31397021, #$ ;; 18.92  24  17
             0.85513299]) #  ;; 33.10  25  18
-    """
+    '''
     #p_3_6_12112 = 0.064
     #peak[idx3] = (gam[idx6]/gam[idx3])*p_3_6_12112 / (wave0[idx6]/wave0[idx3])*peak[idx6]
     return {'wave0':wave0, 'gamma':gam, 'peak':peak, 'complex':comp}
 
 
 def gauss_prof(wave, gauss, ext=None):
-    ''' Compute the flux from a gaussian profile
+    """Computes the flux from a gaussian profile.
 
-    Arguments:
-    wave -- array of wavelengths to compute fluxes for
-    gauss -- list of profile parameters for each line [wave0, sigma, peak],...]
+    Arguments
+    ---------
+    wave : np.array
+        An array of wavelengths to compute fluxes for.
+    gauss : list 
+        A list of profile parameters for each line [wave0, gamma, peak],...]
 
     Returns: Array of fluxes corresponding to initial wavelength array
-    '''
+    """
     A0 = np.asarray(gauss[2]) # Peak
     A1 = np.asarray(gauss[0]) # wave0
-    gam = np.asarray(gauss[1]) # width in gamma
+    gam = np.asarray(gauss[1]) # width (sigma) in gamma
 
     #gam[gam<1e-5] = 1e-5  ### Minimum FWHM (um) - error avoidance
     #A0[A0<1e-14] = 1e-14  ### Avoid zeros/underflows
@@ -108,23 +115,24 @@ def gauss_prof(wave, gauss, ext=None):
 
 
 def drude_prof(wave, drude, ext=None):
-    """
-    Output the comblined PAH profiles with a set of parameters (wave, width(gamma), peak, complex).
+    """Outputs the combined PAH profiles with a set of parameters (wave, width(gamma), 
+    peak, complex).
 
-    Port of jam_drudeflux.pro IDL routine. Drude is a list of 3-elements 
-    [wave0, gamma, peak] for each line 
-    Verified 8/24/20
-    This is the line profile used for PAHs, see Draine's ISM book for a better 
-    explanation
+    A port of jam_drudeflux.pro IDL routine. Drude is a list of 3-elements [wave0, gamma, 
+    peak] for each line. Verified, 8/24/20. This is the line profile used for PAHs, see 
+    Draine's ISM book for a better explanation.
 
     Parameters
     ----------
-    wave -- array of wavelengths to compute fluxes for
-    drude -- list of profile paramerers for each line [[waves],[widths(gamma)],[peaks],[complexes]]
+    wave : np.ndarray 
+        An array of wavelengths to compute fluxes for.
+    drude : list 
+        A list of profile paramerers for each line [[waves],[widths(gamma)],[peaks],[complexes]].
 
     Returns
     -------
-    Profile of the summation of all the PAH features
+    pah_prof : np.ndarray
+        The fluxes of this PAH feature as a function of wavelength.
     """
     drude_arr = np.asarray(drude[:3]).transpose() # get drude arr with 3 cols: wave, width, peak
 
@@ -174,20 +182,25 @@ def drude_prof(wave, drude, ext=None):
 
 
 def drude_int_fluxes(wave, drude, ext=None, scale=1.0, flxunits=u.Jy, wvunits=u.um):
-    ''' Computes integrated flux of each line in drude, with optional extinction
+    """Computes the integrated flux of each line in drude, with optional extinction.
 
-    Arguments:
-    wave -- array of wavelengths to compute fluxes
-    drude -- list of profile paramerers for each line [[waves],[widths],[peaks],[complexes]]
+    Arguments
+    ---------
+    wave : np.ndarray
+        An array of wavelengths to compute fluxes for.
+    drude : list
+        A list of profile paramerers for each line [[waves],[widths],[peaks],[complexes]].
+    ext : np.ndarray or None
+        An extinction curve to apply to flux, with same shape as wave. Default: None (no
+        extinction).
+    scale : float
+        The PAH contribution relative to continuum at refwave. Default: 1.0 (use whatever
+        the fitter gives!).
 
-    Keyword Arguments:
-    ext -- extinction curve to apply to flux, with same shape as wave. Default None (no extinction)
-    scale -- PAH contribution relative to continuum at refwave. Default 1.0 (use whatever the fitter gives!)
-    refwave -- PAH reference wavelength, default 6.22um
-
-    Returns: array of integrated fluxes for each PAH in the drude table
-
-    '''
+    Returns: 
+    int_fluxes : np.ndarray 
+        An array of integrated fluxes for each PAH in the drude table.
+    """
     if ext is None:
         ext = np.ones(wave.shape)
     int_fluxes = np.zeros(len(drude[0]))
